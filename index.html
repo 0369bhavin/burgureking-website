@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BurgerKing - Food Delivery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        .tabs {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        .tab-btn {
+            padding: 3px 5px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: var(--text-dark);
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .tab-btn.active {
+            color: var(--orange-color);
+            border-bottom: 1px solid var(--orange-color);
+        }
+        .tab-content {
+            display: none;
+            padding: 15px 0;
+            /* This ensures content scrolls if too long */
+            max-height: 50vh; 
+            overflow-y: auto; 
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .modal {
+            max-width: 500px; /* Adjust modal size for content */
+        }
+        /* New button for tab navigation */
+        .btn-next-step {
+             background-color: var(--orange-color);
+            color: white;
+            border: none;
+            padding: 2px 4px;
+            border-radius: 1px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal slide-down">
+            <span class="close-modal" id="closeLogin">&times;</span>
+            <h2>Welcome Back</h2>
+            <p class="modal-subtitle">Enter details to order your meal.</p>
+            <form id="loginForm">
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="email" placeholder="user@example.com" required>
+                </div>
+                <div class="input-group">
+                    <label>Password (Min 6 chars)</label>
+                    <input type="password" id="password" placeholder="******" required>
+                </div>
+                <button type="submit" class="btn btn-signin full-width">Log In</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="cartModal">
+        <div class="modal slide-down large-modal">
+            <span class="close-modal" id="closeCart">&times;</span>
+            <h2>Checkout</h2>
+            
+            <button class="tab-btn" data-tab="cart">1.Cart</button>
+<button class="tab-btn" data-tab="address">2.Address</button>
+<button class="tab-btn" data-tab="payment">3.Payment</button>
+
+
+            <div class="tab-content active" id="cartContent">
+                <h3>Items</h3>
+                <div id="cartItemsContainer">
+                    <p id="emptyCartMessage">Your cart is empty. Add a burger!</p>
+                </div>
+                
+                <div class="cart-summary">
+                    <p>Subtotal: <strong id="cartSubtotal">$0.00</strong></p>
+                    <p>Tax (5%): <strong id="cartTax">$0.00</strong></p>
+                    <h3>Grand Total: <strong id="cartGrandTotal">$0.00</strong></h3>
+                </div>
+                
+                <button class="btn btn-buy full-width" onclick="goToAddress()">
+    Place Order <i class="fas fa-arrow-right"></i>
+</button>
+
+            </div>
+
+            <div class="tab-content" id="addressContent">
+                <h3>🏠 Delivery Details</h3>
+                <form id="addressForm">
+                    <div class="input-group">
+                        <label>Full Name</label>
+                        <input type="text" id="deliveryName" placeholder="John Doe" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Street Address</label>
+                        <input type="text" id="deliveryStreet" placeholder="123 Main St, Apt 4B" required>
+                    </div>
+                    <div class="input-inline">
+                        <div class="input-group half-width">
+                            <label>City</label>
+                            <input type="text" id="deliveryCity" placeholder="City" required>
+                        </div>
+                        <div class="input-group half-width">
+                            <label>Zip/Postal Code</label>
+                            <input type="text" id="deliveryZip" placeholder="12345" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="deliveryPhone" placeholder="123-456-7890" required>
+                    </div>
+                </form>
+
+                <button class="btn btn-buy full-width" onclick="goToPayment()">
+    Continue to Payment <i class="fas fa-credit-card"></i>
+</button>
+
+            </div>
+            
+            <div class="tab-content" id="paymentContent">
+                <h3>💳 Select Payment Method</h3>
+                <div class="payment-section">
+                    <div class="payment-options">
+                        <label class="payment-option" onclick="selectPayment(this, 'card')">
+                            <input type="radio" name="payment" value="card" checked>
+                            <i class="fas fa-credit-card"></i> 
+                            <span>Credit Card (Dummy)</span>
+                        </label>
+                        <label class="payment-option" onclick="selectPayment(this, 'cod')">
+                            <input type="radio" name="payment" value="cod">
+                            <i class="fas fa-money-bill-wave"></i> 
+                            <span>Cash on Delivery</span>
+                        </label>
+                    </div>
+
+                    <div id="cardPaymentForm" class="payment-form">
+                        <h4>Card Details</h4>
+                        <form id="cardForm">
+                            <input type="text" placeholder="Card Number (13-19 digits)" required>
+                            <div class="input-inline">
+                                <input type="text" placeholder="MM/YY" required>
+                                <input type="text" placeholder="CVV" required>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <button class="btn btn-buy full-width" onclick="confirmOrder()">Place Order</button>
+            </div>
+
+        </div>
+    </div>
+
+    <header class="fade-in-down">
+        <div class="logo">
+            <i class="fas fa-hamburger logo-icon"></i> BurgerKing
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#home" class="active" onclick="handleNavClick(this, 'Home')">Home</a></li>
+                <li><a href="#miniMenuContainer" onclick="handleNavClick(this, 'Menu')">Menu</a></li> 
+            </ul>
+        </nav>
+        <div class="nav-actions">
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search burgers..." onkeyup="filterMenu()">
+                <i class="fas fa-search icon-btn" id="searchIcon" onclick="toggleSearch()"></i>
+            </div>
+            
+            <div class="cart-icon-wrapper icon-btn" onclick="openCart()">
+                <i class="fas fa-shopping-bag"></i>
+                <span class="dot" id="cartCounter">0</span>
+            </div>
+            
+            <div id="authButtons">
+                <button class="btn btn-signin" onclick="openLogin()">Sign In</button>
+                <button class="btn btn-login" onclick="openLogin()">Login</button>
+            </div>
+
+            <div id="userProfile" class="user-profile">
+                <span class="user-name"></span>
+                <span class="logout-link" onclick="handleLogout()">Logout</span>
+            </div>
+        </div>
+        <i class="fas fa-bars mobile-menu-btn"></i>
+    </header>
+
+    <section class="hero" id="home">
+        <div class="hero-left">
+            <h1 class="fade-in-left delay-1">ORDER YOUR <br> <span>favourite Foods</span></h1>
+            <p class="subtitle fade-in-left delay-2">
+                Freshly cooked, delivered hot to your doorstep. Experience the best taste in town with our signature recipes.
+            </p>
+            <p class="price-tag fade-in-left delay-3">Total order: <span id="currentOrderPrice">$0.00</span></p>
+            
+            <div class="action-buttons-group fade-in-left delay-4">
+                <button class="btn btn-buy" onclick="handleBuyClick()">
+                    Buy Now <i class="fas fa-arrow-right"></i> 
+                </button>
+                <button class="btn btn-add-cart" id="addToCartBtn" onclick="addToCart()">
+                    Add to Cart <i class="fas fa-cart-plus"></i>
+                </button>
+            </div>
+
+            <div class="mini-menu fade-in-up delay-5" id="miniMenuContainer">
+                </div>
+        </div>
+
+        <div class="hero-right">
+            <div class="bg-shape"></div>
+            <img src="" class="hero-img fade-in-right" id="mainBurgerImage" alt="Big Burger">
+            
+            <div class="float-card float-anim">
+                <div class="float-content">
+                    <h3>salad <i class="fas fa-star star"></i> 4.7</h3>
+                    <div class="time"><i class="far fa-clock"></i> 10-18 mins</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="script.js"></script>
+</body>
+</html>
